@@ -12,8 +12,9 @@ from gym.envs.registration import register
     You could test the correctness of your code by 
     typing 'nosetests -v mdp_dp_test.py' in the terminal
 """
+
 # Evaluate non-deterministic
-env = gym.make("FrozenLake-v0")
+env = gym.make("FrozenLake-v1")
 env = env.unwrapped
 
 

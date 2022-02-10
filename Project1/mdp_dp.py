@@ -1,5 +1,6 @@
 ### MDP Value Iteration and Policy Iteration
 ### Reference: https://web.stanford.edu/class/cs234/assignment1/index.html 
+
 import numpy as np
 
 np.set_printoptions(precision=3)
@@ -52,8 +53,41 @@ def policy_evaluation(P, nS, nA, policy, gamma=0.9, tol=1e-8):
     ############################
     # YOUR IMPLEMENTATION HERE #
     
+    #    delta = 0 
+    #    for s in range(nS):
+    #        v = value_function[s]
+    #        Vnew = sum over a of policy(A|S) sum over sprime and r of  prob * (sprime r given s a)[r + gamma * V(s')]
+    #        delta  = max( delta, v - Vnew)
+    #    Stop when delta < tol
+    while True:
+        delta = 0
+        for s in range(nS):
+            v = value_function[s]
+            va = getValue(P,value_function,s,policy[s],gamma)
+            value_function[s] = sum(np.multiply(policy[s], va )) 
+            delta = max(delta,abs(v - value_function[s]))
+        if delta < tol: break    
     ############################
     return value_function
+
+def getValue(P,V,s,a,gamma):
+    """
+    Get the Value of a give S for all a:
+    S: int
+    A: array of choices  1 x nA 
+
+    """
+    va = []
+    # ap - Probablity of any action given the policy
+    # action - range[0,nA]
+    for ap,action in zip(a,range(0,len(a))):
+        tmp = 0
+        for p,s_, r, _ in P[s][action]:
+            tmp += p*(r + gamma * V[s_])
+        va.append(tmp)
+    return va
+
+
 
 
 def policy_improvement(P, nS, nA, value_from_policy, gamma=0.9):
@@ -76,6 +110,11 @@ def policy_improvement(P, nS, nA, value_from_policy, gamma=0.9):
     new_policy = np.ones([nS, nA]) / nA
 	############################
 	# YOUR IMPLEMENTATION HERE #
+    
+    
+    for s in range(0,nS):
+        #print(old_action)
+        new_policy[s] = np.eye(4)[np.argmax(getValue(P,value_from_policy,s,a = [0,1,2,3],gamma = gamma))]   
 
 	############################
     return new_policy
@@ -102,7 +141,16 @@ def policy_iteration(P, nS, nA, policy, gamma=0.9, tol=1e-8):
     new_policy = policy.copy()
 	############################
 	# YOUR IMPLEMENTATION HERE #
-
+    while True:
+        policy_stable = True
+        old_policy = new_policy
+        V = policy_evaluation(P,nS,nA,new_policy,gamma,tol)
+        new_policy = policy_improvement(P, nS, nA, V, gamma)
+        if not np.array_equal(old_policy,new_policy): policy_stable = False
+        if policy_stable: break
+        
+        #print(new_policy)
+    
 	############################
     return new_policy, V
 
@@ -128,10 +176,21 @@ def value_iteration(P, nS, nA, V, gamma=0.9, tol=1e-8):
     V_new = V.copy()
     ############################
     # YOUR IMPLEMENTATION HERE #
-
+    policy_new = np.zeros([nS,nA])
+    while True:
+        delta = 0
+        for s in range(0,nS):
+            v = V_new[s]
+            va = getValue(P, V_new, s, [0, 1, 2, 3], gamma)
+            V_new[s] = max(va)
+            delta = max(delta,abs( v - V_new[s]))
+            bestAction = np.argmax(va)
+            policy_new[s] = np.eye(nA)[bestAction]
+        if delta < tol:break
     ############################
     return policy_new, V_new
 
+    
 def render_single(env, policy, render = False, n_episodes=100):
     """
     Given a game envrionemnt of gym package, play multiple episodes of the game.
@@ -159,6 +218,11 @@ def render_single(env, policy, render = False, n_episodes=100):
                 env.render() # render the game
             ############################
             # YOUR IMPLEMENTATION HERE #
+            action = np.argmax(policy[ob])
+            ob, reward,done,prob = env.step(action)
+            total_rewards+=reward
+            
+            
             
     return total_rewards
 
