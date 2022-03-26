@@ -41,10 +41,20 @@ def epsilon_greedy(Q, state, nA, epsilon = 0.1):
     ############################
     # YOUR IMPLEMENTATION HERE #
 
+    action = None
+    e = np.random.random()
+    if e < 1 - epsilon:  # P(Greedy) = 1-e
+        bestq = -1000
+        bestA = None
+        for a in range(nA):
+            q = Q[state][a]
+            if q > bestq:
+                bestA = a
+                bestq = q
+        action = bestA
 
-
-
-
+    else:
+        action = np.random.randint(nA)
     ############################
     return action
 
@@ -81,34 +91,26 @@ def sarsa(env, n_episodes, gamma=1.0, alpha=0.5, epsilon=0.1):
     # YOUR IMPLEMENTATION HERE #
     
     # loop n_episodes
+    for _ in range(n_episodes):
+        # initialize the environment
 
-        # define decaying epsilon
+        state = env.reset()
+        action = epsilon_greedy(Q, state, env.action_space.n, epsilon)
 
+        while True:
+            # Take a step
+            next_state, reward, done, _ = env.step(action)
 
-        # initialize the environment 
+            best_next_action = np.argmax(Q[next_state])
+            td_target = reward + gamma * Q[next_state][best_next_action]
+            td_error = td_target - Q[state][action]
+            Q[state][action] += alpha * td_error
 
-        
-        # get an action from policy
+            if done:
+                break
 
-        # loop for each step of episode
-
-            # return a new state, reward and done
-
-            # get next action
-
-            
-            # TD update
-            # td_target
-
-            # td_error
-
-            # new Q
-
-            
-            # update state
-
-            # update action
-
+            state = next_state
+            action = best_next_action
     ############################
     return Q
 
@@ -141,24 +143,26 @@ def q_learning(env, n_episodes, gamma=1.0, alpha=0.5, epsilon=0.1):
     # YOUR IMPLEMENTATION HERE #
     
     # loop n_episodes
-
+    for _ in range(n_episodes):
         # initialize the environment 
-
         
-        # loop for each step of episode
+        state = env.reset()
+        action = epsilon_greedy(Q,state,env.action_space.n, epsilon)
+        
+        while True:
+            # Take a step
+            next_state, reward, done, _ = env.step(action)
 
-            # get an action from policy
-            
-            # return a new state, reward and done
-            
-            # TD update
-            # td_target with best Q
+            best_next_action = np.argmax(Q[next_state])
+            td_target = reward + gamma * Q[next_state][best_next_action]
+            td_error = td_target - Q[state][action]
+            Q[state][action] += alpha * td_error
 
-            # td_error
+            if done:
+                break
 
-            # new Q
-            
-            # update state
+            state = next_state
+            action = best_next_action
 
     ############################
     return Q

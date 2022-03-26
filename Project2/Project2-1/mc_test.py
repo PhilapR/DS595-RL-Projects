@@ -12,7 +12,7 @@ from mc import *
     You could test the correctness of your code by 
     typing 'nosetests -v mc_test.py' in the terminal
 """
-env = gym.make('Blackjack-v0')
+env = gym.make('Blackjack-v1')
 
 #---------------------------------------------------------------
 def test_python_version():
@@ -31,6 +31,7 @@ def test_initial_policy():
     assert np.allclose(action2,1)
     
 #---------------------------------------------------------------
+#%%
 def test_mc_prediction():
     '''mc_prediction (20 points)'''
     V_500k = mc_prediction(initial_policy, env, n_episodes=500000, gamma = 1.0)
@@ -42,12 +43,16 @@ def test_mc_prediction():
     
     assert len(V_500k) == 280
     for b in boundaries1:
+        print(V_500k[b])
         assert np.allclose(V_500k[b], -0.7, atol = 0.05)
     for b in boundaries2:
+        print(V_500k[b])
         assert np.allclose(V_500k[b], -0.4, atol = 0.1)
     for b in boundaries3:
+        print(V_500k[b])
+
         assert V_500k[b]>0.6
-                     
+#%%                  
 #---------------------------------------------------------------
 def test_epsilon_greedy():      
     '''epsilon_greedy (8 points)'''
@@ -59,7 +64,7 @@ def test_epsilon_greedy():
     for _ in range(10000):
         action = epsilon_greedy(Q, state, 4,  epsilon=0.1)
         actions.append(action)
-        
+    print( 1-np.count_nonzero(actions)/10000)
     assert np.allclose(1-np.count_nonzero(actions)/10000,0.925,atol=0.02)
     
 #---------------------------------------------------------------
@@ -80,3 +85,5 @@ def test_mc_control_epsilon_greedy():
     
     assert len(Q_500k) == 280
     assert count >= 1 
+
+# %%
